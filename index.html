@@ -5,110 +5,504 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Is it windy? — Lethbridge</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-body{
-  margin:0;
-  font-family:system-ui,Segoe UI,Arial;
-  background:#0b1220;
-  color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.card{
-  width:360px;
-  background:#111a2e;
-  padding:20px;
-  border-radius:16px;
-  text-align:center;
-}
-.gauge{
-  position:relative;
-  width:100%;
-  height:180px;
-}
-.arc{
-  width:100%;
-  height:100%;
-  border-radius:200px 200px 20px 20px;
-  background:conic-gradient(from 180deg,#39ff88,#ffd84a,#ff3d5a);
-  mask:radial-gradient(circle at 50% 100%,transparent 55%,black 56%);
-}
-.needle{
-  position:absolute;
-  bottom:15px;
-  left:50%;
-  width:4px;
-  height:120px;
-  background:white;
-  transform-origin:50% 100%;
-  transform:translateX(-50%) rotate(-90deg);
-  transition:0.5s;
-}
-.hub{
-  position:absolute;
-  bottom:5px;
-  left:50%;
-  width:18px;
-  height:18px;
-  background:white;
-  border-radius:50%;
-  transform:translateX(-50%);
-}
-.big{font-size:40px;font-weight:700;}
+  :root{
+    --bg1:#0b1220;
+    --bg2:#101a35;
+    --white:#ffffff;
+  }
+
+  /* HERO AREA: fills the visible screen (like a Wix hero section) */
+  body{
+    margin:0;
+    font-family:"Fredoka", system-ui, Segoe UI, Arial, sans-serif;
+    background: radial-gradient(1200px 700px at 50% 20%, var(--bg2) 0%, var(--bg1) 60%);
+    color:var(--white);
+  }
+
+  .hero{
+    min-height: 100vh;              /* fills the screen */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: clamp(16px, 3vw, 34px);
+  }
+
+  .card{
+    width: min(1100px, 96vw);
+    border-radius: 28px;
+    padding: clamp(18px, 2.6vw, 34px);
+    background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,255,255,0.16);
+    box-shadow: 0 28px 80px rgba(0,0,0,0.40);
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* Subtle “cartoon sky” dots */
+  .card:before{
+    content:"";
+    position:absolute;
+    inset:-60px;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,255,255,0.10) 0 2px, transparent 3px),
+      radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 35%, rgba(255,255,255,0.08) 0 2px, transparent 3px),
+      radial-gradient(circle at 85% 75%, rgba(255,255,255,0.10) 0 2px, transparent 3px);
+    opacity:0.55;
+    pointer-events:none;
+  }
+
+  header{
+    position:relative;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    justify-content:space-between;
+    gap: 10px 16px;
+    margin-bottom: clamp(10px, 1.8vw, 18px);
+  }
+
+  h1{
+    margin:0;
+    font-size: clamp(34px, 4vw, 56px);
+    letter-spacing: 0.2px;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.25);
+  }
+
+  .sub{
+    margin:0;
+    opacity:0.85;
+    font-size: clamp(16px, 1.7vw, 22px);
+  }
+
+  /* Shake wrapper (we shake this, not the whole page) */
+  .shake-wrap{
+    position:relative;
+  }
+
+  .gauge-wrap{
+    display:grid;
+    place-items:center;
+    padding: clamp(6px, 1.2vw, 16px) 6px;
+    position:relative;
+  }
+
+  /* Big responsive gauge */
+  .gauge{
+    position:relative;
+    width: min(900px, 92vw);
+    height: clamp(320px, 42vw, 520px);
+  }
+
+  .arc{
+    position:absolute;
+    inset:0;
+    border-radius: 999px 999px 30px 30px;
+    background:
+      conic-gradient(from 180deg,
+        #39e7ff 0deg,
+        #47ff8c 55deg,
+        #ffe55a 105deg,
+        #ff9a3d 145deg,
+        #ff4767 180deg);
+    -webkit-mask: radial-gradient(circle at 50% 100%, transparent 0 56%, #000 57% 100%);
+            mask: radial-gradient(circle at 50% 100%, transparent 0 56%, #000 57% 100%);
+    filter: saturate(1.15);
+    border: 4px solid rgba(255,255,255,0.18);
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.18), 0 20px 55px rgba(0,0,0,0.35);
+  }
+
+  .inner{
+    position:absolute;
+    left:50%;
+    bottom:0;
+    transform: translateX(-50%);
+    width: 86%;
+    height: 86%;
+    border-radius: 999px 999px 24px 24px;
+    background: rgba(10,14,28,0.72);
+    border: 3px solid rgba(255,255,255,0.11);
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,0.22);
+  }
+
+  /* Tick marks */
+  .ticks{
+    position:absolute;
+    left:50%;
+    bottom: 8%;
+    transform: translateX(-50%);
+    width: 92%;
+    height: 92%;
+    pointer-events:none;
+  }
+  .tick{
+    position:absolute;
+    left:50%;
+    bottom: 10%;
+    width: 6px;
+    height: 26px;
+    background: rgba(255,255,255,0.88);
+    border-radius: 999px;
+    transform-origin: 50% 220px;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.28);
+  }
+  .tick.small{
+    height: 16px;
+    opacity: 0.60;
+  }
+
+  /* Needle */
+  .needle{
+    position:absolute;
+    left:50%;
+    bottom: 12%;
+    width: 12px;
+    height: 54%;
+    transform-origin: 50% 92%;
+    transform: translateX(-50%) rotate(-90deg);
+    transition: transform 700ms cubic-bezier(.2,1.1,.2,1.05);
+    background: linear-gradient(180deg, #ffffff, #d9e3ff);
+    border-radius: 999px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.35);
+    outline: 3px solid rgba(0,0,0,0.18);
+  }
+
+  .hub{
+    position:absolute;
+    left:50%;
+    bottom: 10%;
+    width: 40px;
+    height: 40px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #ffffff, #b9c7ef 55%, #3a4a74 100%);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.38);
+    border: 3px solid rgba(0,0,0,0.20);
+  }
+
+  .labels{
+    position:absolute;
+    left:50%;
+    bottom: 5.5%;
+    transform: translateX(-50%);
+    width: 88%;
+    display:flex;
+    justify-content:space-between;
+    font-size: clamp(14px, 1.6vw, 20px);
+    opacity: 0.86;
+    user-select:none;
+  }
+
+  /* Readout */
+  .readout{
+    position:relative;
+    text-align:center;
+    margin-top: clamp(6px, 1vw, 14px);
+    display:grid;
+    gap: clamp(8px, 1vw, 12px);
+  }
+
+  .big{
+    font-size: clamp(66px, 8vw, 120px);
+    font-weight: 700;
+    letter-spacing: -0.6px;
+    line-height: 0.95;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.25);
+  }
+
+  .unit{
+    font-size: clamp(16px, 1.6vw, 22px);
+    opacity: 0.82;
+    margin-left: 10px;
+    font-weight: 700;
+  }
+
+  .verdict{
+    font-size: clamp(22px, 2.4vw, 34px);
+    font-weight: 800;
+  }
+
+  .meta{
+    opacity: 0.80;
+    font-size: clamp(14px, 1.3vw, 18px);
+  }
+
+  .btnrow{
+    display:flex;
+    justify-content:center;
+    gap: 10px;
+    flex-wrap:wrap;
+    margin-top: 2px;
+  }
+
+  button{
+    font-family: inherit;
+    font-weight: 800;
+    font-size: clamp(14px, 1.2vw, 18px);
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    cursor:pointer;
+  }
+  button:hover{
+    border-color: rgba(255,255,255,0.30);
+    transform: translateY(-1px);
+  }
+  button:active{ transform: translateY(0px); }
+
+  .error{
+    color: #ff9fb1;
+    font-weight: 800;
+    display:none;
+  }
+
+  /* CHINOOK ALERT stamp */
+  .stamp{
+    position:absolute;
+    right: clamp(14px, 2vw, 22px);
+    top: clamp(14px, 2vw, 22px);
+    transform: rotate(12deg) scale(0.85);
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255, 72, 103, 0.95);
+    border: 3px solid rgba(0,0,0,0.22);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.35);
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display:none;
+    z-index: 5;
+  }
+  .stamp span{
+    display:block;
+    font-size: 18px;
+    line-height: 1.05;
+  }
+  .stamp small{
+    display:block;
+    margin-top: 2px;
+    font-size: 13px;
+    opacity: 0.92;
+  }
+
+  .stamp.show{
+    display:block;
+    animation: stampPop 380ms cubic-bezier(.2,1.25,.2,1) both;
+  }
+  @keyframes stampPop{
+    from{ transform: rotate(12deg) scale(0.3); opacity:0; }
+    to{ transform: rotate(12deg) scale(0.98); opacity:1; }
+  }
+
+  /* Shake animation (triggered only when unhinged) */
+  .shake{
+    animation: shakeIt 420ms ease-in-out both;
+  }
+  @keyframes shakeIt{
+    0%{ transform: translate(0,0) rotate(0deg); }
+    15%{ transform: translate(-6px, 2px) rotate(-0.6deg); }
+    30%{ transform: translate(7px, -2px) rotate(0.7deg); }
+    45%{ transform: translate(-6px, 3px) rotate(-0.7deg); }
+    60%{ transform: translate(6px, -2px) rotate(0.6deg); }
+    75%{ transform: translate(-4px, 1px) rotate(-0.4deg); }
+    100%{ transform: translate(0,0) rotate(0deg); }
+  }
 </style>
 </head>
 
 <body>
-<div class="card">
-  <h2>Is it windy?</h2>
-  <p>Lethbridge, Alberta 🌬️</p>
+  <section class="hero">
+    <div class="card">
+      <div id="stamp" class="stamp">
+        <span>Chinook Alert</span>
+        <small>Brace yourself</small>
+      </div>
 
-  <div class="gauge">
-    <div class="arc"></div>
-    <div id="needle" class="needle"></div>
-    <div class="hub"></div>
-  </div>
+      <header>
+        <h1>Is it windy?</h1>
+        <p class="sub">Lethbridge, Alberta</p>
+      </header>
 
-  <div>
-    <span id="speed" class="big">--</span> km/h
-  </div>
-  <p id="verdict">Loading…</p>
-  <button onclick="refresh()">Refresh</button>
-</div>
+      <div id="shakeWrap" class="shake-wrap">
+        <div class="gauge-wrap">
+          <div class="gauge" aria-label="Wind speed gauge">
+            <div class="arc"></div>
+            <div class="inner"></div>
+
+            <div id="ticks" class="ticks"></div>
+
+            <div id="needle" class="needle"></div>
+            <div class="hub"></div>
+
+            <div class="labels">
+              <span>Calm</span>
+              <span>Spicy</span>
+              <span>Unhinged</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="readout">
+          <div>
+            <span id="speed" class="big">--</span><span class="unit">km/h</span>
+          </div>
+          <div id="verdict" class="verdict">Loading…</div>
+          <div id="meta" class="meta">Fetching wind…</div>
+
+          <div class="btnrow">
+            <button id="refreshBtn" type="button">Refresh</button>
+            <button id="autoBtn" type="button">Auto: ON</button>
+          </div>
+
+          <div id="err" class="error"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
 <script>
-const API_KEY = "24ce85c259ed4cf4b80193635260402";
-const MAX_KMH = 120;
+  // NOTE: This key is visible in your page source. Fine for small fun sites,
+  // but if you go viral, consider hiding it behind a tiny proxy later.
+  const API_KEY = "24ce85c259ed4cf4b80193635260402";
 
-function angleFromSpeed(kmh){
-  return -90 + (Math.min(kmh,MAX_KMH)/MAX_KMH)*180;
-}
+  const MAX_KMH = 120;
+  const MIN_DEG = -90;
+  const MAX_DEG = 90;
 
-function verdict(kmh){
-  if(kmh<10) return "Not really";
-  if(kmh<25) return "A little windy";
-  if(kmh<45) return "Windy";
-  if(kmh<70) return "Very windy";
-  return "Unhinged Chinook 🌪️";
-}
+  const CHINOOK_ALERT_AT = 70; // stamp pops in at 70+
+  const UNHINGED_AT = 95;      // shake at 95+
 
-async function refresh(){
-  const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=Lethbridge,Canada&aqi=no`;
-  const res = await fetch(url);
-  const data = await res.json();
+  let autoOn = true;
+  let timer = null;
+  const AUTO_MS = 60_000;
 
-  const speed = data.current.wind_kph;
+  const needleEl = document.getElementById("needle");
+  const ticksEl = document.getElementById("ticks");
+  const speedEl = document.getElementById("speed");
+  const verdictEl = document.getElementById("verdict");
+  const metaEl = document.getElementById("meta");
+  const errEl = document.getElementById("err");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const autoBtn = document.getElementById("autoBtn");
+  const shakeWrap = document.getElementById("shakeWrap");
+  const stampEl = document.getElementById("stamp");
 
-  document.getElementById("speed").textContent = Math.round(speed);
-  document.getElementById("verdict").textContent = verdict(speed);
-  document.getElementById("needle").style.transform =
-    `translateX(-50%) rotate(${angleFromSpeed(speed)}deg)`;
-}
+  function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
 
-refresh();
-setInterval(refresh,60000);
+  function speedToAngle(kmh){
+    const ratio = clamp(kmh / MAX_KMH, 0, 1);
+    return MIN_DEG + ratio * (MAX_DEG - MIN_DEG);
+  }
+
+  function verdictFor(kmh){
+    if (kmh < 10) return "No. Not really.";
+    if (kmh < 25) return "A little windy.";
+    if (kmh < 45) return "Yep. Windy.";
+    if (kmh < 70) return "Very windy.";
+    if (kmh < 95) return "Extremely windy.";
+    return "Unhinged. Hold onto something.";
+  }
+
+  function setNeedle(angle){
+    needleEl.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+  }
+
+  function boingNeedle(targetAngle){
+    // Quick cartoon bounce: overshoot then settle
+    const overshoot = targetAngle + (targetAngle >= 0 ? 8 : -8);
+    setNeedle(overshoot);
+    setTimeout(() => setNeedle(targetAngle), 140);
+  }
+
+  function makeTicks(){
+    ticksEl.innerHTML = "";
+    for (let kmh = 0; kmh <= MAX_KMH; kmh += 10){
+      const tick = document.createElement("div");
+      const isBig = (kmh % 20 === 0);
+      tick.className = "tick" + (isBig ? "" : " small");
+      const angle = speedToAngle(kmh);
+      tick.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+      ticksEl.appendChild(tick);
+    }
+  }
+
+  function triggerShake(){
+    shakeWrap.classList.remove("shake"); // restart animation
+    void shakeWrap.offsetWidth;
+    shakeWrap.classList.add("shake");
+  }
+
+  function setStamp(show){
+    if (show) stampEl.classList.add("show");
+    else stampEl.classList.remove("show");
+  }
+
+  async function refresh(){
+    errEl.style.display = "none";
+    errEl.textContent = "";
+    metaEl.textContent = "Fetching wind…";
+
+    try{
+      const url = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=Lethbridge,Canada&aqi=no`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+      const data = await res.json();
+      if (!data?.current) throw new Error("Bad response");
+
+      const speed = data.current.wind_kph;
+      const gust  = data.current.gust_kph;
+      const dir   = data.current.wind_degree;
+      const when  = data.current.last_updated;
+
+      speedEl.textContent = Math.round(speed);
+      verdictEl.textContent = verdictFor(speed);
+
+      const angle = speedToAngle(speed);
+      boingNeedle(angle);
+
+      // Chinook alert stamp
+      setStamp(speed >= CHINOOK_ALERT_AT);
+
+      // Shake when unhinged
+      if (speed >= UNHINGED_AT) triggerShake();
+
+      const bits = [];
+      if (typeof gust === "number") bits.push(`Gusts: ${Math.round(gust)} km/h`);
+      if (typeof dir === "number") bits.push(`Dir: ${Math.round(dir)}°`);
+      if (when) bits.push(`Updated: ${when}`);
+      metaEl.textContent = bits.join(" • ") || "—";
+
+    } catch(e){
+      errEl.style.display = "block";
+      errEl.textContent = `Couldn’t load wind (${e.message}).`;
+      metaEl.textContent = "Try Refresh.";
+    }
+  }
+
+  function setAuto(on){
+    autoOn = on;
+    autoBtn.textContent = `Auto: ${autoOn ? "ON" : "OFF"}`;
+    if (timer) clearInterval(timer);
+    timer = null;
+    if (autoOn) timer = setInterval(refresh, AUTO_MS);
+  }
+
+  refreshBtn.addEventListener("click", refresh);
+  autoBtn.addEventListener("click", () => setAuto(!autoOn));
+
+  // Init
+  makeTicks();
+  setNeedle(speedToAngle(0));
+  setAuto(true);
+  refresh();
 </script>
 </body>
 </html>
